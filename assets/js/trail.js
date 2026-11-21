@@ -8,6 +8,7 @@
 
   var CONFIG = {
     lifetime: 650,   // ms a point of the line stays visible (trail length)
+    dotSize: 24,     // px, diameter of the dot the line starts from (0 = no dot)
     maxWidth: 2.2,   // px, line thickness at the head
     follow: 0.28,    // 0..1, how quickly the head catches up with the cursor (lower = smoother/laggier)
     minStep: 0.6,    // px, ignore tiny movements
@@ -43,9 +44,11 @@
   var target = null;           // pointer position
   var head = null;             // smoothed head position
   var running = false;
+  var lastMove = 0;            // timestamp of the last pointer movement (drives the dot fade)
 
   window.addEventListener('pointermove', function (e) {
     if (e.pointerType === 'touch') return;
+    lastMove = performance.now();
     target = { x: e.clientX, y: e.clientY };
     if (!head) head = { x: target.x, y: target.y };
     start();
@@ -76,14 +79,28 @@
 
     ctx.clearRect(0, 0, w, h);
     draw(now);
+    var dotAlpha = drawDot(now);
 
     var settled = !target || !head ||
       Math.hypot(target.x - head.x, target.y - head.y) < CONFIG.minStep;
-    if (points.length || !settled) {
+    if (points.length || !settled || dotAlpha > 0) {
       requestAnimationFrame(frame);
     } else {
       running = false;
     }
+  }
+
+  // The dot the line starts from. Fully visible while the mouse moves,
+  // fades out over `lifetime` ms after it stops. Returns the alpha it was drawn with.
+  function drawDot(now) {
+    if (!CONFIG.dotSize || !head) return 0;
+    var life = 1 - (now - lastMove) / CONFIG.lifetime;
+    if (life <= 0) return 0;
+    ctx.fillStyle = 'rgba(' + CONFIG.color + ',' + (life * life * CONFIG.opacity).toFixed(3) + ')';
+    ctx.beginPath();
+    ctx.arc(head.x, head.y, CONFIG.dotSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+    return life;
   }
 
   function draw(now) {
