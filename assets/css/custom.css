@@ -57,3 +57,39 @@
 @media (prefers-reduced-motion: reduce) {
   .w-mod-js .up { transform: none; }
 }
+
+/* ---- Thin stroke around pictures and videos --------------------------------------------
+   1px, white at 10% opacity, drawn INSIDE the edge (like an inside stroke in Figma), so sizes and
+   layout do not change. Change the colour/opacity here. To switch the stroke off for videos,
+   delete `.video-con::after` and `.w-background-video::after` from the selector lists. */
+:root {
+  --media-stroke: rgba(255, 255, 255, 0.1);
+}
+
+/* pictures placed directly on the page (case pages): outline follows the 16px corner radius */
+img.image,
+img.image-13,
+img.image-half,
+img.image-9 {
+  outline: 1px solid var(--media-stroke);
+  outline-offset: -1px;
+}
+
+/* case cards and videos clip their content (overflow: hidden, hover zoom, object-fit),
+   so the stroke is an overlay that stays put while the picture inside moves */
+.project-image,
+.video-con,
+.w-background-video {
+  position: relative;
+}
+
+.project-image::after,
+.video-con::after,
+.w-background-video::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--media-stroke);
+  border-radius: inherit;
+  pointer-events: none;
+}
