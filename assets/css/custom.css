@@ -54,6 +54,11 @@
   transform: none !important;
 }
 
+/* keep the button above the cursor trail and the ripple layer */
+.up {
+  z-index: 10001;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .w-mod-js .up { transform: none; }
 }
