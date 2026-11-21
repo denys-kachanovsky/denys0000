@@ -54,7 +54,7 @@
   transform: none !important;
 }
 
-/* keep the button above the cursor trail and the ripple layer */
+/* keep the button above the ripple layer */
 .up {
   z-index: 10001;
 }
