@@ -58,6 +58,13 @@
   .w-mod-js .up { transform: none; }
 }
 
+/* Side navigation on case pages: the link of the section being read is white (.w--current is set by
+   main.js; its colour comes from style.css). Webflow only animates the change TO white,
+   so give the links the same 0.2s transition for fading back to grey too. */
+.sticky .h3-low._50 {
+  transition: color 0.2s ease-in;
+}
+
 /* ---- Thin stroke around pictures and videos --------------------------------------------
    1px, white at 10% opacity, drawn INSIDE the edge (like an inside stroke in Figma), so sizes and
    layout do not change. Change the colour/opacity here. To switch the stroke off for videos,

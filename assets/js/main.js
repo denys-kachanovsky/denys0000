@@ -83,7 +83,46 @@
     window.addEventListener('resize', kick);
   }
 
-  // ---- 3. autoplaying videos must be muted + inline --------------------------
+  // ---- 3. side navigation: highlight the section that is being read ---------
+  // Every link in .sticky points to a section (#s1, #s2 ...). The section that crosses the
+  // "reading line" (a bit above the middle of the screen) gets the link highlighted in white
+  // (Webflow's own .w--current style). Before the first section and after the last one nothing is lit.
+  var navLinks = [].slice.call(document.querySelectorAll('.sticky a[href^="#"]'));
+  var sections = navLinks.map(function (a) {
+    var id = a.getAttribute('href').slice(1);
+    return { link: a, target: id ? document.getElementById(id) : null };
+  }).filter(function (s) { return s.target; });
+
+  if (sections.length) {
+    var READING_LINE = 0.4;            // fraction of the viewport height, measured from the top
+    var currentSection = -2, navRaf = 0;
+
+    var updateNav = function () {
+      navRaf = 0;
+      var line = window.innerHeight * READING_LINE, active = -1, i;
+      for (i = 0; i < sections.length; i++) {
+        if (sections[i].target.getBoundingClientRect().top <= line) active = i; // last one that has started
+      }
+      // past the end of the last section (closing text, next case) -> nothing is lit
+      if (active === sections.length - 1 &&
+          sections[active].target.getBoundingClientRect().bottom < line) active = -1;
+      if (active === currentSection) return;
+      currentSection = active;
+      sections.forEach(function (s, idx) {
+        var on = idx === active;
+        s.link.classList.toggle('w--current', on);
+        if (on) s.link.setAttribute('aria-current', 'location'); else s.link.removeAttribute('aria-current');
+      });
+    };
+    var queueNav = function () { if (!navRaf) navRaf = requestAnimationFrame(updateNav); };
+
+    updateNav();
+    window.addEventListener('scroll', queueNav, { passive: true });
+    window.addEventListener('resize', queueNav);
+    window.addEventListener('load', queueNav);   // image heights are known only after load
+  }
+
+  // ---- 4. autoplaying videos must be muted + inline --------------------------
   // Set the properties explicitly (attributes alone are ignored by some browsers)
   // and retry play() if it was blocked.
   document.querySelectorAll('video[autoplay]').forEach(function (v) {
